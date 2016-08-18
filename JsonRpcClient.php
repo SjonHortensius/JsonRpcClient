@@ -1,0 +1,1 @@
+<html><body>You are being <a href="https://raw.githubusercontent.com/SjonHortensius/InsightApi/0d8dd7bb5d4bc2f03dc9e39a739721571626d537/JsonRpcClient.php">redirected</a>.</body></html>
