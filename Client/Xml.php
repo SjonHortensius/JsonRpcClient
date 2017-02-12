@@ -6,11 +6,18 @@ class Xml
 {
 	protected $_url;
 	protected $_transport;
+	protected $_prefix;
 
-	public function __construct($url, Rpc\Transport $transport)
+	public function __construct($url, Rpc\Transport $transport, $methodPrefix = '')
 	{
 		$this->_url = $url;
 		$this->_transport = $transport;
+		$this->_prefix = $methodPrefix;
+	}
+
+	public function __get($p)
+	{
+		return new self($this->_url, $this->_transport, $p.'.');
 	}
 
 	public function __call($method, $params)
@@ -20,7 +27,7 @@ class Xml
 			$xml .= '<param>'. self::_encodeValue($v). '</param>';
 
 		$request =  '<?xml version="1.0"?><methodCall>'.
-			'<methodName>'.self::_encodeString($method).'</methodName>'.
+			'<methodName>'.self::_encodeString($this->_prefix.$method).'</methodName>'.
 			'<params>'. $xml .'</params>'.
 		'</methodCall>';
 
@@ -80,7 +87,7 @@ class Xml
 			throw new Exception('Response cannot be interpreted as xml: %s', [var_export($xml, true)]);
 
 		if (isset($response->fault))
-			throw new Exception('Error from server: %s'. [print_r($response->fault->struct, true)]);
+			throw new Exception('Error from server: %s', [$response->fault->value->struct->member[1]->value->string]);
 
 		return self::_decodeValue($response->params->param[0]->value);
 	}
