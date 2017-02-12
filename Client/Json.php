@@ -1,13 +1,18 @@
-<?php
-class JsonRpcClient
-{
-	private $_url;
-	private $_id = 1;
-	private $_isNotification = false;
+<?php namespace TooBasic\Rpc\Client;
+use TooBasic\Rpc;
+use TooBasic\Exception;
 
-	public function __construct($url)
+class Json
+{
+	protected $_url;
+	protected $_transport;
+	protected $_id = 1;
+	protected $_isNotification = false;
+
+	public function __construct($url, Rpc\Transport $transport)
 	{
 		$this->_url = $url;
+		$this->_transport = $transport;
 	}
 
 	public function setNotification($n = true)
@@ -24,16 +29,8 @@ class JsonRpcClient
 			'id' => $requestId,
 		]);
 
-		$c = curl_init($this->_url);
-		curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($c, CURLOPT_HTTPHEADER, ['Content-type' => 'application/json']);
-		curl_setopt($c, CURLOPT_POST, true);
-		curl_setopt($c, CURLOPT_POSTFIELDS, $request);
-
-		$response = curl_exec($c);
+		$response = $this->_transport->request('POST', $this->_uri, ['Content-type' => 'application/json'], $request);
 		$response = json_decode($response);
-
-		curl_close($c);
 
 		if ($this->_isNotification)
 			return true;
