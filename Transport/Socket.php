@@ -4,52 +4,49 @@ use TooBasic\Exception;
 
 class Socket implements Rpc\Transport
 {
-	protected $_host;
-	protected $_port;
-	protected $_socket;
+	protected $_enableRaw = false;
 
-	public function __construct($host, $port, Rpc\Transport $transport = null)
+	public function __construct(Rpc\Transport $nextTransport = null)
 	{
-		$this->_host = $host;
-		$this->_port = $port;
-
-		if (isset($transport))
-			throw new Exception('Socket transport does not support chaining');
+		if (isset($nextTransport))
+			throw new Exception(__CLASS__. ' does not support chaining');
 	}
 
-	public function request(string $method, string $uri, array $headers = [], string $body = null): string
+	public function request(string $method, string $url, array $headers = [], string $body = null): string
 	{
-		if (!empty($method) && !empty($uri))
+		$url = (object)parse_url($url);
+
+		if (empty($method) && empty($headers))
+			$request = $body;
+		else
 		{
-			$request = $method .' '. $uri .' HTTP/1.0'."\r\n";
+			$request = $method .' '. $url->path.$url->query .' HTTP/1.0'."\r\n";
 
 			foreach ($headers as $k => $v)
 				$request .= $k .': '. $v. "\r\n";
 
 			$request .= "\r\n";
+
+			if (isset($body))
+				$request .= $body;
 		}
-		else
-			$request = '';
 
-		if (isset($body))
-			$request .= $body;
+		$socket = stream_socket_client($url->host .':'. $url->port, $errno, $errstr);
 
-		$this->_socket = stream_socket_client($this->_host .':'. $this->_port, $errno, $errstr);
-
-		if (!$this->_socket)
-			throw new Exception('Unable to connect to %s:%d; %s', [$this->_host, $this->_port, $errstr]);
+		if (!$socket)
+			throw new Exception('Unable to connect to %s; %s', [$url->host, $errstr]);
 
 		try
 		{
-			fwrite($this->_socket, $request);
+			fwrite($socket, $request);
 
 			$response = '';
-			while (!feof($this->_socket))
-				$response .= fgets($this->_socket, 1024);
+			while (!feof($socket))
+				$response .= fgets($socket, 1024);
 		}
 		finally
 		{
-			fclose($this->_socket);
+			fclose($socket);
 		}
 
 		return $response;

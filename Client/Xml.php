@@ -99,14 +99,16 @@ class Xml
 
 		switch ($child->getName())
 		{
-			case 'integer':
-				return (int)$child->int;
+			case 'i8':
+			case 'i4':
+			case 'int':
+				return (int)$child;
 			case 'boolean':
-				return (bool)(string)$child->boolean;
+				return (bool)(string)$child;
 			case 'double':
-				return (float)$child->double;
+				return (float)$child;
 			case 'string':
-				return (string)$xml->string;
+				return (string)$child;
 			case 'array':
 				$values = [];
 				foreach ($child->data->value as $value)

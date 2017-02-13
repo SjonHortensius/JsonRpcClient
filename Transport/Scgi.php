@@ -5,9 +5,9 @@ class Scgi implements Rpc\Transport
 {
 	protected $_transport;
 
-	public function __construct(Rpc\Transport $transport)
+	public function __construct(Rpc\Transport $nextTransport = null)
 	{
-		$this->_transport = $transport;
+		$this->_transport = $nextTransport;
 	}
 
 	public function request(string $method, string $url, array $headers = [], string $body = null): string
@@ -29,7 +29,7 @@ class Scgi implements Rpc\Transport
 
 		$cgi = strlen($cgi).':'.$cgi.','.$body;
 
-		return $this->_parseResponse($this->_transport->request("", "", [], $cgi));
+		return $this->_parseResponse($this->_transport->request("", $url, [], $cgi));
 	}
 
 	protected function _parseResponse($response)

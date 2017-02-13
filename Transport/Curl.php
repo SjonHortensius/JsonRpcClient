@@ -4,10 +4,10 @@ use TooBasic\Exception;
 
 class Curl implements Rpc\Transport
 {
-	public function __construct(Rpc\Transport $transport = null)
+	public function __construct(Rpc\Transport $nextTransport = null)
 	{
-		if (isset($transport))
-			throw new Exception('Curl transport does not support chaining');
+		if (isset($nextTransport))
+			throw new Exception(__CLASS__. ' does not support chaining');
 	}
 
 	public function request(string $method, string $url, array $headers = [], string $body = null): string

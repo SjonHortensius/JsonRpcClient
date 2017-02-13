@@ -29,7 +29,7 @@ class Json
 			'id' => $requestId,
 		]);
 
-		$response = $this->_transport->request('POST', $this->_uri, ['Content-type' => 'application/json'], $request);
+		$response = $this->_transport->request('POST', $this->_url, ['Content-type' => 'application/json'], $request);
 		$response = json_decode($response);
 
 		if ($this->_isNotification)
