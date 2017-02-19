@@ -29,8 +29,11 @@ class Json
 			'id' => $requestId,
 		]);
 
-		$response = $this->_transport->request('POST', $this->_url, ['Content-type' => 'application/json'], $request);
-		$response = json_decode($response);
+		$rawResponse = $this->_transport->request('POST', $this->_url, ['Content-type' => 'application/json'], $request);
+		$response = json_decode($rawResponse);
+
+		if (false == $response)
+			throw new Exception('Could not decode response as json: `%s`', [$rawResponse]);
 
 		if ($this->_isNotification)
 			return true;
