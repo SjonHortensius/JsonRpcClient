@@ -5,6 +5,8 @@ use TooBasic\Exception;
 class Curl implements Rpc\Transport
 {
 	protected $_options = [];
+	protected $_clientUrl;
+	protected $_client;
 
 	public function __construct(Rpc\Transport $nextTransport = null)
 	{
@@ -23,30 +25,37 @@ class Curl implements Rpc\Transport
 			$v = $k .': '. $v;
 		});
 
-		$c = curl_init($url);
-
-		try
+		if (isset($this->_client) && $url !== $this->_clientUrl)
 		{
-			// User-options first, so we can override them
-			curl_setopt_array($c, $this->_options);
-
-			curl_setopt($c, CURLOPT_CUSTOMREQUEST, $method);
-			curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($c, CURLOPT_HTTPHEADER, $headers);
-
-			if (isset($body))
-				curl_setopt($c, CURLOPT_POSTFIELDS, $body);
-
-			$response = curl_exec($c);
-
-			if (false === $response)
-				throw new Exception('Error executing curl request: %s', [curl_error($c)]);
-
-			return $response;
+			curl_close($this->_client);
+			unset($this->_client);
 		}
-		finally
-		{
-			curl_close($c);
-		}
+
+		$this->_clientUrl = $url;
+		if (!isset($this->_client))
+			$this->_client = curl_init($url);
+
+		// User-options first, so we can override them
+		curl_setopt_array($this->_client, $this->_options);
+
+		curl_setopt($this->_client, CURLOPT_CUSTOMREQUEST, $method);
+		curl_setopt($this->_client, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($this->_client, CURLOPT_HTTPHEADER, $headers);
+
+		if (isset($body))
+			curl_setopt($this->_client, CURLOPT_POSTFIELDS, $body);
+
+		$response = curl_exec($this->_client);
+
+		if (false === $response)
+			throw new Exception('Error executing curl request: %s', [curl_error($this->_client)]);
+
+		return $response;
+	}
+
+	public function __destruct()
+	{
+		if (isset($this->_client))
+			curl_close($this->_client);
 	}
 }
