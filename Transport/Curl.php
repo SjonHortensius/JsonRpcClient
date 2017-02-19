@@ -5,7 +5,6 @@ use TooBasic\Exception;
 class Curl implements Rpc\Transport
 {
 	protected $_options = [];
-	protected $_clientUrl;
 	protected $_client;
 
 	public function __construct(Rpc\Transport $nextTransport = null)
@@ -25,19 +24,13 @@ class Curl implements Rpc\Transport
 			$v = $k .': '. $v;
 		});
 
-		if (isset($this->_client) && $url !== $this->_clientUrl)
-		{
-			curl_close($this->_client);
-			unset($this->_client);
-		}
-
-		$this->_clientUrl = $url;
 		if (!isset($this->_client))
-			$this->_client = curl_init($url);
+			$this->_client = curl_init();
 
 		// User-options first, so we can override them
 		curl_setopt_array($this->_client, $this->_options);
 
+		curl_setopt($this->_client, CURLOPT_URL, $url);
 		curl_setopt($this->_client, CURLOPT_CUSTOMREQUEST, $method);
 		curl_setopt($this->_client, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($this->_client, CURLOPT_HTTPHEADER, $headers);
