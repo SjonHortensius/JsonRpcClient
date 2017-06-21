@@ -38,11 +38,11 @@ class Json
 		if ($this->_isNotification)
 			return true;
 
+		if (!empty($response->error))
+			throw new Exception('Request error: '. $response->error->message);
+
 		if ($response->id != $requestId)
 			throw new Exception('Unexpected responseId '. $response->id .', expected '. $requestId);
-
-		if (!is_null($response->error))
-			throw new Exception('Request error: '. $response->error->message);
 
 		return $response->result;
 	}
