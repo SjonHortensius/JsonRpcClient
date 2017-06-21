@@ -23,17 +23,12 @@ class Json
 	public function __call($method, $params)
 	{
 		$requestId = $this->_isNotification ? null : $this->_id;
-		$request = json_encode([
+
+		$response = $this->_request([
 			'method' => $method,
 			'params' => array_values($params),
 			'id' => $requestId,
 		]);
-
-		$rawResponse = $this->_transport->request('POST', $this->_url, ['Content-type' => 'application/json'], $request);
-		$response = json_decode($rawResponse);
-
-		if (false == $response)
-			throw new Exception('Could not decode response as json: `%s`', [$rawResponse]);
 
 		if ($this->_isNotification)
 			return true;
@@ -45,5 +40,16 @@ class Json
 			throw new Exception('Unexpected responseId '. $response->id .', expected '. $requestId);
 
 		return $response->result;
+	}
+
+	public function _request(array $data)
+	{
+		$raw = $this->_transport->request('POST', $this->_url, ['Content-type' => 'application/json'], json_encode($data));
+		$response = json_decode($raw);
+
+		if (false == $response)
+			throw new Exception('Could not decode response as json: `%s`', [$raw]);
+
+		return $response;
 	}
 }
