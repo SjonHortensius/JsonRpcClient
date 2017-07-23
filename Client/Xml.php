@@ -8,19 +8,19 @@ class Xml
 	protected $_transport;
 	protected $_prefix;
 
-	public function __construct($url, Rpc\Transport $transport, $methodPrefix = '')
+	public function __construct(string$url, Rpc\Transport $transport, $methodPrefix = '')
 	{
 		$this->_url = $url;
 		$this->_transport = $transport;
 		$this->_prefix = $methodPrefix;
 	}
 
-	public function __get($p)
+	public function __get(string $p)
 	{
 		return new self($this->_url, $this->_transport, $p.'.');
 	}
 
-	public function __call($method, $params)
+	public function __call(string $method, array $params)
 	{
 		$xml = '';
 		foreach ($params as $v)
@@ -37,7 +37,7 @@ class Xml
 		return $response;
 	}
 
-	protected static function _encodeValue($value)
+	protected static function _encodeValue(string $value): string
 	{
 		switch (gettype($value))
 		{
@@ -74,13 +74,13 @@ class Xml
 		return '<value>' .$xml. '</value>';
 	}
 
-	protected static function _encodeString($s)
+	protected static function _encodeString(string $s): string
 	{
 		// Follow the exact specs, see http://xmlrpc.scripting.com/spec.html
 		return str_replace(['<', '&'], ['&lt;', '&amp;'], $s);
 	}
 
-	protected static function _decodeResponse($xml)
+	protected static function _decodeResponse(string $xml)
 	{
 		$response = simplexml_load_string($xml);
 		if (false === $response)

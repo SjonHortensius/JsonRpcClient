@@ -6,23 +6,23 @@ class Json
 {
 	protected $_url;
 	protected $_transport;
-	protected $_id = 1;
+	protected static $_id = 1;
 	protected $_isNotification = false;
 
-	public function __construct($url, Rpc\Transport $transport)
+	public function __construct(string $url, Rpc\Transport $transport)
 	{
 		$this->_url = $url;
 		$this->_transport = $transport;
 	}
 
-	public function setNotification($n = true)
+	public function setNotification(bool $n = true): void
 	{
-		$this->_isNotification = (bool)$n;
+		$this->_isNotification = $n;
 	}
 
-	public function __call($method, $params)
+	public function __call(string $method, array $params)
 	{
-		$requestId = $this->_isNotification ? null : $this->_id;
+		$requestId = $this->_isNotification ? null : static::$_id++;
 
 		$response = $this->_request([
 			'method' => $method,

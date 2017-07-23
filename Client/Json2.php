@@ -6,9 +6,9 @@ class Json2 extends Json
 {
 	protected $_useNamedParameters = true;
 
-	public function useNamedParameters($n = true)
+	public function useNamedParameters(bool $n = true): void
 	{
-		$this->_useNamedParameters = (bool)$n;
+		$this->_useNamedParameters = $n;
 	}
 
 	public function _request(array $data)
